@@ -63,7 +63,7 @@ fi
 
 # ── Native build ──────────────────────────────────────────────────────────────
 [[ "$EUID" -eq 0 ]] || die "Native build must run as root (sudo)"
-command -v archiso &>/dev/null || die "archiso not installed. Run: pacman -S archiso"
+command -v mkarchiso &>/dev/null || die "archiso not installed..."
 
 step "Fetching upstream CachyOS-Live-ISO"
 LIVE_ISO_DIR="${WORK_DIR}/CachyOS-Live-ISO"
