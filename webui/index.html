@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>cachyos-poweruser</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;800;900&family=Barlow:wght@300;400;500&display=swap');
+
+:root {
+  --bg:      #080a0f;
+  --bg2:     #0d111a;
+  --surface: #111720;
+  --card:    #161e2e;
+  --border:  #1e2d45;
+  --accent:  #00b4ff;
+  --accent2: #ff6b35;
+  --green:   #00e676;
+  --text:    #d0e4f7;
+  --muted:   #4a6080;
+  --mono:    'Share Tech Mono', monospace;
+  --display: 'Barlow Condensed', sans-serif;
+  --body:    'Barlow', sans-serif;
+}
+
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── SCANLINES ─────────────────────────────────────────── */
+body::before {
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(0,180,255,.015) 2px, rgba(0,180,255,.015) 4px
+  );
+}
+
+/* ── ANIMATED GRID ─────────────────────────────────────── */
+body::after {
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 60px 60px;
+  opacity: .3;
+  animation: gridScroll 30s linear infinite;
+}
+@keyframes gridScroll {
+  0%   { background-position: 0 0; }
+  100% { background-position: 60px 60px; }
+}
+
+main { position:relative; z-index:1; max-width:1040px; margin:0 auto; padding:0 24px 80px; }
+
+/* ── HEADER ────────────────────────────────────────────── */
+header {
+  padding: 60px 0 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 24px;
+}
+
+.logo-area h1 {
+  font-family: var(--display);
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  font-weight: 900;
+  line-height: .9;
+  letter-spacing: -.02em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.logo-area h1 span { color: var(--accent); }
+
+.logo-area .tagline {
+  font-family: var(--mono);
+  font-size: .72rem;
+  color: var(--muted);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin-top: 14px;
+  border-left: 2px solid var(--accent);
+  padding-left: 12px;
+}
+
+.status-badge {
+  font-family: var(--mono);
+  font-size: .68rem;
+  padding: 8px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--green);
+  color: var(--green);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.status-badge .dot {
+  display: inline-block; width:6px; height:6px; border-radius:50%;
+  background: var(--green); margin-right:6px;
+  animation: blink 1.4s step-end infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ── SECTION ───────────────────────────────────────────── */
+.section {
+  margin-top: 48px;
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
+  background: var(--surface);
+}
+
+.section-header {
+  display: flex; align-items: baseline; gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+}
+.section-num {
+  font-family: var(--mono);
+  font-size: .65rem; color: var(--accent);
+  letter-spacing: .1em;
+}
+.section-title {
+  font-family: var(--display);
+  font-size: 1.1rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.section-body { padding: 24px; }
+
+/* ── INSTALL METHOD TOGGLE ─────────────────────────────── */
+.method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+.method-card {
+  padding: 28px 24px; cursor: pointer;
+  border: 1px solid transparent;
+  transition: all .15s;
+  position: relative;
+}
+.method-card:first-child { border-right: 1px solid var(--border); }
+.method-card:hover { background: rgba(0,180,255,.04); }
+.method-card.active {
+  background: rgba(0,180,255,.07);
+  border-color: var(--accent);
+}
+.method-card.active::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+}
+.method-icon { font-size: 2rem; display: block; margin-bottom: 12px; }
+.method-name {
+  font-family: var(--display);
+  font-size: 1.3rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .04em;
+  margin-bottom: 6px;
+}
+.method-desc {
+  font-size: .82rem; color: var(--muted); line-height: 1.6;
+}
+.method-tag {
+  display: inline-block; margin-top: 10px;
+  padding: 2px 8px; font-family: var(--mono);
+  font-size: .62rem; letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.tag-green { background: rgba(0,230,118,.08); border: 1px solid rgba(0,230,118,.3); color: var(--green); }
+.tag-blue  { background: rgba(0,180,255,.08); border: 1px solid rgba(0,180,255,.3); color: var(--accent); }
+.tag-orange{ background: rgba(255,107,53,.08); border: 1px solid rgba(255,107,53,.3); color: var(--accent2); }
+
+/* ── ISO INFO CARD ─────────────────────────────────────── */
+.iso-specs {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+  background: var(--border); margin-bottom: 24px;
+}
+.spec-item {
+  background: var(--card); padding: 16px;
+}
+.spec-label { font-family: var(--mono); font-size: .6rem; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px; }
+.spec-value { font-family: var(--display); font-size: 1.1rem; font-weight: 700; color: var(--text); }
+
+/* ── WHAT'S INCLUDED ───────────────────────────────────── */
+.pkg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); }
+.pkg-item { background: var(--card); padding: 12px 16px; display: flex; align-items: center; gap: 10px; }
+.pkg-icon { font-size: 1rem; width: 24px; text-align: center; }
+.pkg-name { font-family: var(--mono); font-size: .78rem; color: var(--text); }
+.pkg-note { font-size: .7rem; color: var(--muted); }
+.pkg-removed {
+  background: rgba(255,50,50,.03);
+}
+.pkg-removed .pkg-name { color: var(--muted); text-decoration: line-through; }
+
+/* ── TERMINAL BLOCK ────────────────────────────────────── */
+.terminal {
+  background: #05080f;
+  border: 1px solid var(--border);
+  font-family: var(--mono); font-size: .8rem;
+  line-height: 1.8;
+}
+.terminal-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--card); border-bottom: 1px solid var(--border);
+}
+.terminal-dots { display:flex; gap:5px; }
+.terminal-dots span { width:10px; height:10px; border-radius:50%; }
+.td-r { background: #ff5f57; } .td-y { background: #febc2e; } .td-g { background: #28c840; }
+.terminal-title { font-size: .65rem; color: var(--muted); letter-spacing: .08em; }
+.terminal-body { padding: 20px; overflow-x: auto; }
+.t-comment { color: var(--muted); }
+.t-prompt   { color: var(--green); }
+.t-cmd      { color: var(--text); }
+.t-flag     { color: var(--accent); }
+.t-val      { color: var(--accent2); }
+.t-output   { color: #4a7aaa; }
+
+.copy-btn {
+  padding: 4px 12px; font-family: var(--mono); font-size: .62rem;
+  letter-spacing: .08em; text-transform: uppercase;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--muted); cursor: pointer; transition: all .15s;
+}
+.copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+.copy-btn.ok    { border-color: var(--green);  color: var(--green); }
+
+/* ── INSTALL STEPS ─────────────────────────────────────── */
+.steps { display:flex; flex-direction:column; gap:0; }
+.step-item {
+  display: flex; gap: 20px;
+  padding: 20px 0; border-bottom: 1px solid var(--border);
+}
+.step-item:last-child { border-bottom: none; }
+.step-num {
+  font-family: var(--display); font-size: 2.5rem; font-weight: 900;
+  color: var(--border); min-width: 48px; line-height: 1;
+  transition: color .15s;
+}
+.step-item:hover .step-num { color: var(--accent); }
+.step-content h3 {
+  font-family: var(--display); font-weight: 700;
+  font-size: 1rem; text-transform: uppercase; letter-spacing: .05em;
+  margin-bottom: 6px;
+}
+.step-content p { font-size: .82rem; color: var(--muted); line-height: 1.6; }
+
+/* ── DIFF VIEW ─────────────────────────────────────────── */
+.diff-view {
+  font-family: var(--mono); font-size: .75rem; line-height: 1.7;
+  background: #050810; border: 1px solid var(--border); padding: 16px 20px;
+  overflow-x: auto;
+}
+.diff-add    { color: var(--green); background: rgba(0,230,118,.04); display:block; }
+.diff-remove { color: #ff5252;      background: rgba(255,82,82,.04);  display:block; }
+.diff-info   { color: var(--muted); display:block; }
+.diff-ctx    { color: #2a4060; display:block; }
+
+/* ── FOOTER ─────────────────────────────────────────────── */
+footer {
+  margin-top: 60px; padding: 32px 0;
+  border-top: 1px solid var(--border);
+  font-family: var(--mono); font-size: .68rem; color: var(--muted);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+}
+footer a { color: var(--accent); text-decoration: none; }
+footer a:hover { color: var(--text); }
+
+/* ── RESPONSIVE ─────────────────────────────────────────── */
+@media (max-width: 640px) {
+  header { grid-template-columns: 1fr; }
+  .method-grid { grid-template-columns: 1fr; }
+  .method-card:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+  .iso-specs { grid-template-columns: 1fr 1fr; }
+  .pkg-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<main>
+
+<!-- ── Header ───────────────────────────────────────────────── -->
+<header>
+  <div class="logo-area">
+    <h1>cachyos<span>-</span>poweruser</h1>
+    <p class="tagline">KDE Plasma · Offline &amp; Online · Based on Official CachyOS</p>
+  </div>
+  <div class="status-badge">
+    <span class="dot"></span>LIVE — v0.1.0
+  </div>
+</header>
+
+<!-- ── Install Method ───────────────────────────────────────── -->
+<div class="section" style="margin-top:40px">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <span class="section-title">Choose install method</span>
+  </div>
+  <div class="section-body" style="padding:0">
+    <div class="method-grid">
+      <div class="method-card active" onclick="setMethod('gui',this)">
+        <span class="method-icon">🖥️</span>
+        <div class="method-name">Calamares GUI</div>
+        <div class="method-desc">The official CachyOS graphical installer. Works offline and online. Pick your language, partitions, and user — then install.</div>
+        <span class="method-tag tag-green">Recommended</span>
+        <span class="method-tag tag-blue">GUI</span>
+      </div>
+      <div class="method-card" onclick="setMethod('cli',this)">
+        <span class="method-icon">⌨️</span>
+        <div class="method-name">CLI Installer</div>
+        <div class="method-desc">Official CachyOS New-Cli-Installer wrapped with offline support. Runs in the terminal. Full control, no GUI required.</div>
+        <span class="method-tag tag-orange">Power users</span>
+        <span class="method-tag tag-blue">Terminal</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Install Mode ─────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <span class="section-title">Install mode</span>
+  </div>
+  <div class="section-body" style="padding:0">
+    <div class="method-grid">
+      <div class="method-card active" onclick="setMode('offline',this)" id="mode-offline">
+        <span class="method-icon">📦</span>
+        <div class="method-name">Offline First <small style="font-size:.7rem;font-weight:400;font-family:var(--mono)">(recommended)</small></div>
+        <div class="method-desc">ISO includes all KDE packages bundled. Installs completely without internet. If internet is available, newer packages are preferred automatically.</div>
+        <span class="method-tag tag-green">Works anywhere</span>
+      </div>
+      <div class="method-card" onclick="setMode('online',this)" id="mode-online">
+        <span class="method-icon">🌐</span>
+        <div class="method-name">Online Only</div>
+        <div class="method-desc">Standard CachyOS install. Downloads packages from official mirrors during installation. Identical to the official CachyOS experience.</div>
+        <span class="method-tag tag-blue">Latest packages</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ISO Specs ────────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <span class="section-title">What's in the ISO</span>
+  </div>
+  <div class="section-body">
+    <div class="iso-specs">
+      <div class="spec-item">
+        <div class="spec-label">Base</div>
+        <div class="spec-value">CachyOS</div>
+      </div>
+      <div class="spec-item">
+        <div class="spec-label">Desktop</div>
+        <div class="spec-value">KDE Plasma</div>
+      </div>
+      <div class="spec-item">
+        <div class="spec-label">Kernel</div>
+        <div class="spec-value">linux-cachyos</div>
+      </div>
+      <div class="spec-item">
+        <div class="spec-label">ISO Size</div>
+        <div class="spec-value" id="iso-size">~4.5 GB</div>
+      </div>
+    </div>
+
+    <div class="pkg-grid">
+      <div class="pkg-item"><span class="pkg-icon">✅</span><span class="pkg-name">plasma-desktop</span><span class="pkg-note"> — KDE Plasma 6</span></div>
+      <div class="pkg-item"><span class="pkg-icon">✅</span><span class="pkg-name">linux-cachyos</span><span class="pkg-note"> — CachyOS optimized kernel</span></div>
+      <div class="pkg-item"><span class="pkg-icon">✅</span><span class="pkg-name">sddm</span><span class="pkg-note"> — Login manager</span></div>
+      <div class="pkg-item"><span class="pkg-icon">✅</span><span class="pkg-name">networkmanager</span><span class="pkg-note"> — Network management</span></div>
+      <div class="pkg-item"><span class="pkg-icon">✅</span><span class="pkg-name">dolphin + kate + konsole</span><span class="pkg-note"> — Core KDE apps</span></div>
+      <div class="pkg-item"><span class="pkg-icon">✅</span><span class="pkg-name">cachyos-settings</span><span class="pkg-note"> — CachyOS optimizations</span></div>
+      <div class="pkg-item"><span class="pkg-icon">✅</span><span class="pkg-name">calamares</span><span class="pkg-note"> — GUI installer (patched)</span></div>
+      <div class="pkg-item"><span class="pkg-icon">✅</span><span class="pkg-name">cachyos-install</span><span class="pkg-note"> — CLI installer (wrapped)</span></div>
+      <div class="pkg-item pkg-removed"><span class="pkg-icon">❌</span><span class="pkg-name">libreoffice-fresh</span><span class="pkg-note"> — removed to reduce size</span></div>
+      <div class="pkg-item pkg-removed"><span class="pkg-icon">❌</span><span class="pkg-name">libreoffice-fresh-en-US</span><span class="pkg-note"> — removed to reduce size</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── How it works ─────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <span class="section-title">How the offline patch works</span>
+  </div>
+  <div class="section-body">
+    <div class="diff-view">
+      <span class="diff-info">--- a/etc/calamares/settings.conf    (official CachyOS)</span>
+      <span class="diff-info">+++ b/etc/calamares/settings.conf    (cachyos-poweruser)</span>
+      <span class="diff-ctx">@@ -exec sequence @@</span>
+      <span class="diff-ctx"> - packages</span>
+      <span class="diff-ctx"> - displaymanager</span>
+      <span class="diff-add">+- shellprocess@offline_detect    # detect bundled localrepo, inject into pacman.conf</span>
+      <span class="diff-ctx"> - packages                       # unchanged — works offline or online transparently</span>
+      <span class="diff-add">+- shellprocess@restore_online    # remove localrepo from installed system</span>
+      <span class="diff-ctx"> - bootloader</span>
+      <span class="diff-ctx"> - umount</span>
+    </div>
+    <div style="margin-top:20px">
+      <div class="steps">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h3>Boot — localrepo auto-activates</h3>
+            <p>A systemd service runs at live-ISO boot. If <code>/var/cache/localrepo</code> exists (offline ISO), it adds <code>[cachyos-local]</code> to pacman.conf with highest priority and writes a flag file.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h3>Install — Calamares runs unchanged</h3>
+            <p>The <code>shellprocess@offline_detect</code> step reads the flag and ensures the target's pacman.conf also has the local repo. All other Calamares modules are 100% official CachyOS.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h3>Package install — transparent fallback</h3>
+            <p>Pacman serves packages from the bundled repo first. Any package not in the local repo falls back to online mirrors automatically. No changes to the packages list.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <h3>Post-install — online repos restored</h3>
+            <p>The <code>shellprocess@restore_online</code> step removes <code>[cachyos-local]</code> from the installed system. First boot gets standard CachyOS mirrors. <code>pacman -Syu</code> works normally.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Quick Start ──────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <span class="section-title">Get started</span>
+  </div>
+  <div class="section-body">
+
+    <!-- One-liner -->
+    <p style="font-family:var(--mono);font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">ONE-LINE INSTALL (Linux with dialog installed):</p>
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="terminal-dots"><span class="td-r"></span><span class="td-y"></span><span class="td-g"></span></div>
+        <div class="terminal-title">bash</div>
+        <button class="copy-btn" onclick="copyText('oneliner',this)">copy</button>
+      </div>
+      <div class="terminal-body">
+        <div id="oneliner">
+          <span class="t-comment"># Opens TUI menu — build ISO, install, or download</span><br>
+          <span class="t-prompt">$</span> <span class="t-cmd">curl -fsSL https://raw.githubusercontent.com/lifersafety/cachyos-poweruser/main/setup.sh <span class="t-flag">|</span> bash</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:20px"></div>
+
+    <!-- Build manually -->
+    <p style="font-family:var(--mono);font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">BUILD ISO MANUALLY (Arch/CachyOS host required):</p>
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="terminal-dots"><span class="td-r"></span><span class="td-y"></span><span class="td-g"></span></div>
+        <div class="terminal-title">bash</div>
+        <button class="copy-btn" id="btn-build" onclick="copyText('build-cmds',this)">copy</button>
+      </div>
+      <div class="terminal-body">
+        <div id="build-cmds">
+          <span class="t-comment"># Install build deps</span><br>
+          <span class="t-prompt">$</span> <span class="t-cmd">sudo pacman -S <span class="t-flag">--needed</span> archiso git dialog</span><br><br>
+          <span class="t-comment"># Clone cachyos-poweruser</span><br>
+          <span class="t-prompt">$</span> <span class="t-cmd">git clone https://github.com/lifersafety/cachyos-poweruser</span><br>
+          <span class="t-prompt">$</span> <span class="t-cmd">cd cachyos-poweruser</span><br><br>
+          <span class="t-comment"># Build KDE offline ISO (clones official CachyOS-Live-ISO + patches)</span><br>
+          <span class="t-prompt">$</span> <span class="t-cmd">sudo bash build/build-iso.sh <span class="t-flag">--profile</span> <span class="t-val">kde-offline</span> <span class="t-flag">--method</span> <span class="t-val">native</span></span><br><br>
+          <span class="t-comment"># Write to USB</span><br>
+          <span class="t-prompt">$</span> <span class="t-cmd">sudo dd if=~/.cachyos-poweruser/out/*.iso of=<span class="t-val">/dev/sdX</span> bs=4M status=progress oflag=sync</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:20px"></div>
+
+    <!-- From live ISO -->
+    <p style="font-family:var(--mono);font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">INSTALL FROM LIVE ISO (booted into target machine):</p>
+    <div class="terminal" id="install-terminal">
+      <div class="terminal-bar">
+        <div class="terminal-dots"><span class="td-r"></span><span class="td-y"></span><span class="td-g"></span></div>
+        <div class="terminal-title">bash — live ISO</div>
+        <button class="copy-btn" id="btn-install" onclick="copyText('install-cmd',this)">copy</button>
+      </div>
+      <div class="terminal-body" id="install-cmd">
+        <!-- Dynamically updated by JS -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── GitHub links ──────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <span class="section-title">Sources &amp; upstream</span>
+  </div>
+  <div class="section-body">
+    <div class="pkg-grid">
+      <div class="pkg-item"><span class="pkg-icon">📁</span>
+        <div><div class="pkg-name"><a href="https://github.com/lifersafety/cachyos-poweruser" target="_blank" style="color:var(--accent);text-decoration:none">lifersafety/cachyos-poweruser</a></div>
+        <div class="pkg-note">This project — patches and installer wrapper</div></div>
+      </div>
+      <div class="pkg-item"><span class="pkg-icon">📁</span>
+        <div><div class="pkg-name"><a href="https://github.com/CachyOS/CachyOS-Live-ISO" target="_blank" style="color:var(--accent);text-decoration:none">CachyOS/CachyOS-Live-ISO</a></div>
+        <div class="pkg-note">Official ISO build system (cloned + patched)</div></div>
+      </div>
+      <div class="pkg-item"><span class="pkg-icon">📁</span>
+        <div><div class="pkg-name"><a href="https://github.com/CachyOS/New-Cli-Installer" target="_blank" style="color:var(--accent);text-decoration:none">CachyOS/New-Cli-Installer</a></div>
+        <div class="pkg-note">Official CLI installer (wrapped with offline support)</div></div>
+      </div>
+      <div class="pkg-item"><span class="pkg-icon">📁</span>
+        <div><div class="pkg-name"><a href="https://github.com/CachyOS/cachyos-calamares" target="_blank" style="color:var(--accent);text-decoration:none">CachyOS/cachyos-calamares</a></div>
+        <div class="pkg-note">Official Calamares config (two steps added)</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span>cachyos-poweruser — GPLv3 — <a href="https://github.com/lifersafety/cachyos-poweruser">github.com/lifersafety/cachyos-poweruser</a></span>
+  <span>Builds on official CachyOS — not affiliated with the CachyOS project</span>
+</footer>
+
+</main>
+
+<script>
+  // ── State ───────────────────────────────────────────────
+  const state = { method: 'gui', mode: 'offline' };
+
+  function setMethod(m, card) {
+    state.method = m;
+    document.querySelectorAll('.method-grid .method-card').forEach((c,i) => {
+      if (i < 2) c.classList.remove('active');
+    });
+    card.classList.add('active');
+    updateInstallCmd();
+  }
+
+  function setMode(m, card) {
+    state.mode = m;
+    document.querySelectorAll('#mode-offline, #mode-online').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    updateInstallCmd();
+    document.getElementById('iso-size').textContent = m === 'offline' ? '~4.5 GB' : '~2.1 GB';
+  }
+
+  // ── Install command generator ───────────────────────────
+  function updateInstallCmd() {
+    const el = document.getElementById('install-cmd');
+    let html = '';
+
+    if (state.method === 'gui') {
+      html = `<span class="t-comment"># Launch Calamares GUI installer from the live desktop</span><br>
+<span class="t-comment"># Offline repo is auto-detected — no extra steps needed</span><br>
+<span class="t-prompt">$</span> <span class="t-cmd">calamares</span><br><br>
+<span class="t-output"># Or if running from terminal in the live ISO:</span><br>
+<span class="t-prompt">$</span> <span class="t-cmd">sudo calamares</span>`;
+    } else {
+      const modeFlag = state.mode === 'offline'
+        ? `<span class="t-comment"># Offline repo is auto-detected — no flag needed</span><br>`
+        : `<span class="t-comment"># Online mode — requires internet connection</span><br>`;
+      html = `${modeFlag}
+<span class="t-prompt">$</span> <span class="t-cmd">sudo bash /usr/local/bin/cachyos-cli-install.sh</span><br><br>
+<span class="t-comment"># Or if running from the downloaded project:</span><br>
+<span class="t-prompt">$</span> <span class="t-cmd">sudo bash installer/cachyos-cli-install.sh</span>`;
+    }
+
+    el.innerHTML = html;
+  }
+
+  // ── Copy helper ─────────────────────────────────────────
+  function copyText(id, btn) {
+    const el = document.getElementById(id);
+    const text = el.innerText || el.textContent;
+    const clean = text.replace(/^[$#]\s/gm, '').trim();
+    navigator.clipboard.writeText(clean).then(() => {
+      btn.textContent = 'copied!';
+      btn.classList.add('ok');
+      setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('ok'); }, 2200);
+    });
+  }
+
+  // ── Init ────────────────────────────────────────────────
+  updateInstallCmd();
+</script>
+</body>
+</html>
